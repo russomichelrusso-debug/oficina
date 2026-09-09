@@ -9,4 +9,5 @@ build/
 coverage/
 .turbo/
 storage/uploads/
+apps/api/uploads/
 apps/web/dev-dist/

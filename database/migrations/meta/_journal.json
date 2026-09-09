@@ -8,6 +8,13 @@
       "when": 1788925436137,
       "tag": "0000_chunky_miek",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788991097701,
+      "tag": "0001_fancy_human_torch",
+      "breakpoints": true
     }
   ]
 }

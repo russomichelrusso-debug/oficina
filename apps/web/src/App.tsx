@@ -7,17 +7,20 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { ClientesPage } from "./features/clientes/ClientesPage";
 import { VeiculosPage } from "./features/veiculos/VeiculosPage";
 import { OrdensServicoPage } from "./features/ordens-servico/OrdensServicoPage";
+import { OrdemServicoDetailPage } from "./features/ordens-servico/OrdemServicoDetailPage";
 import { OrcamentosPage } from "./features/orcamentos/OrcamentosPage";
 import { MecanicosPage } from "./features/mecanicos/MecanicosPage";
 import { EstoquePage } from "./features/estoque/EstoquePage";
 import { FinanceiroPage } from "./features/financeiro/FinanceiroPage";
 import { RelatoriosPage } from "./features/relatorios/RelatoriosPage";
+import { PortalPage } from "./features/portal/PortalPage";
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/portal/:token" element={<PortalPage />} />
         <Route
           element={
             <ProtectedRoute>
@@ -29,6 +32,7 @@ export function App() {
           <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/veiculos" element={<VeiculosPage />} />
           <Route path="/ordens-servico" element={<OrdensServicoPage />} />
+          <Route path="/ordens-servico/:id" element={<OrdemServicoDetailPage />} />
           <Route path="/orcamentos" element={<OrcamentosPage />} />
           <Route path="/mecanicos" element={<MecanicosPage />} />
           <Route path="/estoque" element={<EstoquePage />} />
