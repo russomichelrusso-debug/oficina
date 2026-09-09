@@ -1,0 +1,17 @@
+{
+  "name": "@oficina/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wrapper Capacitor do app web (apps/web) para Android. Ver README.md desta pasta.",
+  "scripts": {
+    "sync": "cap sync android",
+    "open:android": "cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}

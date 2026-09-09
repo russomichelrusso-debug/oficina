@@ -1,0 +1,28 @@
+{
+  "name": "@oficina/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "./dist/schema.js",
+  "types": "./dist/schema.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx migrate.ts",
+    "seed": "tsx seeds/seed.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.1",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/pg": "^8.11.10",
+    "argon2": "^0.41.1",
+    "drizzle-kit": "^0.28.1",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}
