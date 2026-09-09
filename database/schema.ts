@@ -274,6 +274,10 @@ export const serviceOrders = pgTable(
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+    // Token opaco usado no link seguro do cliente (Fase 6, spec §3/§6.5) —
+    // não é um JWT nem senha, apenas um identificador de posse do link.
+    publicToken: uuid("public_token").defaultRandom().notNull(),
+    complaint: text("complaint"),
     createdBy: uuid("created_by"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -281,6 +285,7 @@ export const serviceOrders = pgTable(
   (t) => ({
     tenantIdx: index("service_orders_tenant_idx").on(t.tenantId),
     statusIdx: index("service_orders_status_idx").on(t.status),
+    publicTokenIdx: uniqueIndex("service_orders_public_token_idx").on(t.publicToken),
   }),
 );
 
@@ -514,3 +519,155 @@ export const auditLogs = pgTable(
   },
   (t) => ({ entityIdx: index("audit_logs_entity_idx").on(t.entity, t.entityId) }),
 );
+
+// ---------------------------------------------------------------------------
+// Relations — Fases 2 a 7 (OS, orçamento, mecânico, estoque, financeiro)
+// ---------------------------------------------------------------------------
+
+export const mechanicsRelations = relations(mechanics, ({ one, many }) => ({
+  user: one(users, { fields: [mechanics.userId], references: [users.id] }),
+  workSessions: many(workSessions),
+}));
+
+export const serviceCategoriesRelations = relations(serviceCategories, ({ many }) => ({
+  services: many(services),
+}));
+
+export const servicesRelations = relations(services, ({ one }) => ({
+  category: one(serviceCategories, {
+    fields: [services.categoryId],
+    references: [serviceCategories.id],
+  }),
+}));
+
+export const serviceOrdersRelations = relations(serviceOrders, ({ one, many }) => ({
+  customer: one(customers, { fields: [serviceOrders.customerId], references: [customers.id] }),
+  vehicle: one(vehicles, { fields: [serviceOrders.vehicleId], references: [vehicles.id] }),
+  mechanic: one(mechanics, { fields: [serviceOrders.mechanicId], references: [mechanics.id] }),
+  items: many(serviceOrderItems),
+  statusHistory: many(serviceOrderStatusHistory),
+  quotes: many(quotes),
+  diagnostics: many(diagnostics),
+  checklists: many(checklists),
+  media: many(media),
+  workSessions: many(workSessions),
+  payments: many(payments),
+  accountsReceivable: many(accountsReceivable),
+}));
+
+export const serviceOrderItemsRelations = relations(serviceOrderItems, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [serviceOrderItems.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+}));
+
+export const serviceOrderStatusHistoryRelations = relations(
+  serviceOrderStatusHistory,
+  ({ one }) => ({
+    serviceOrder: one(serviceOrders, {
+      fields: [serviceOrderStatusHistory.serviceOrderId],
+      references: [serviceOrders.id],
+    }),
+  }),
+);
+
+export const quotesRelations = relations(quotes, ({ one, many }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [quotes.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+  items: many(quoteItems),
+  approvals: many(quoteApprovals),
+}));
+
+export const quoteItemsRelations = relations(quoteItems, ({ one }) => ({
+  quote: one(quotes, { fields: [quoteItems.quoteId], references: [quotes.id] }),
+}));
+
+export const quoteApprovalsRelations = relations(quoteApprovals, ({ one }) => ({
+  quote: one(quotes, { fields: [quoteApprovals.quoteId], references: [quotes.id] }),
+  customer: one(customers, {
+    fields: [quoteApprovals.customerId],
+    references: [customers.id],
+  }),
+}));
+
+export const workSessionsRelations = relations(workSessions, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [workSessions.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+  mechanic: one(mechanics, { fields: [workSessions.mechanicId], references: [mechanics.id] }),
+  service: one(services, { fields: [workSessions.serviceId], references: [services.id] }),
+}));
+
+export const diagnosticsRelations = relations(diagnostics, ({ one, many }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [diagnostics.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+  items: many(diagnosticItems),
+}));
+
+export const diagnosticItemsRelations = relations(diagnosticItems, ({ one }) => ({
+  diagnostic: one(diagnostics, {
+    fields: [diagnosticItems.diagnosticId],
+    references: [diagnostics.id],
+  }),
+}));
+
+export const checklistsRelations = relations(checklists, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [checklists.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+}));
+
+export const mediaRelations = relations(media, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [media.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+  vehicle: one(vehicles, { fields: [media.vehicleId], references: [vehicles.id] }),
+}));
+
+export const partCategoriesRelations = relations(partCategories, ({ many }) => ({
+  parts: many(parts),
+}));
+
+export const partsRelations = relations(parts, ({ one, many }) => ({
+  category: one(partCategories, { fields: [parts.categoryId], references: [partCategories.id] }),
+  stockMovements: many(stockMovements),
+}));
+
+export const suppliersRelations = relations(suppliers, ({ many }) => ({
+  stockMovements: many(stockMovements),
+}));
+
+export const stockMovementsRelations = relations(stockMovements, ({ one }) => ({
+  part: one(parts, { fields: [stockMovements.partId], references: [parts.id] }),
+  supplier: one(suppliers, { fields: [stockMovements.supplierId], references: [suppliers.id] }),
+  serviceOrder: one(serviceOrders, {
+    fields: [stockMovements.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [payments.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+}));
+
+export const accountsReceivableRelations = relations(accountsReceivable, ({ one }) => ({
+  serviceOrder: one(serviceOrders, {
+    fields: [accountsReceivable.serviceOrderId],
+    references: [serviceOrders.id],
+  }),
+  customer: one(customers, {
+    fields: [accountsReceivable.customerId],
+    references: [customers.id],
+  }),
+}));

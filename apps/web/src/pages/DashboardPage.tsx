@@ -18,27 +18,17 @@ export function DashboardPage() {
       {error && <p style={{ color: "#dc2626" }}>{error}</p>}
 
       {data && (
-        <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
           <StatCard label="Clientes cadastrados" value={data.totalCustomers} />
           <StatCard label="Veículos cadastrados" value={data.totalVehicles} />
           <StatCard label="Usuários ativos" value={data.activeUsers} />
+          <StatCard label="OS em andamento" value={data.openServiceOrders} />
+          <StatCard
+            label="Faturado hoje"
+            value={data.revenueToday.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          />
         </div>
       )}
-
-      <div
-        style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 8,
-          padding: 20,
-          color: "#6b7280",
-          fontSize: 14,
-        }}
-      >
-        Os indicadores de Ordens de Serviço em andamento e faturamento do dia
-        (ver spec §13) aparecem aqui a partir das Fases 2/3/5, quando os
-        módulos de OS e Financeiro entram em produção.
-      </div>
     </div>
   );
 }

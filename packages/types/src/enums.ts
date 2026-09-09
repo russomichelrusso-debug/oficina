@@ -50,3 +50,17 @@ export enum MediaStage {
   EXECUCAO = "EXECUCAO",
   FINALIZACAO = "FINALIZACAO",
 }
+
+export enum QuoteStatus {
+  RASCUNHO = "RASCUNHO",
+  ENVIADO = "ENVIADO",
+  APROVADO = "APROVADO",
+  PARCIAL = "PARCIAL",
+  RECUSADO = "RECUSADO",
+}
+
+export enum AccountReceivableStatus {
+  PENDENTE = "PENDENTE",
+  PAGO = "PAGO",
+  ATRASADO = "ATRASADO",
+}
