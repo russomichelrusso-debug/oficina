@@ -1,0 +1,23 @@
+{
+  "name": "oficina",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ERP operacional de oficina mecânica — monorepo",
+  "scripts": {
+    "dev:api": "pnpm --filter @oficina/api dev",
+    "dev:web": "pnpm --filter @oficina/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present build && pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "db:generate": "pnpm --filter @oficina/database generate",
+    "db:migrate": "pnpm --filter @oficina/database migrate",
+    "db:seed": "pnpm --filter @oficina/database seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
