@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input } from "@oficina/ui";
 import { createVehicleSchema } from "@oficina/validation";
-import type { CustomerDTO, VehicleDTO } from "@oficina/types";
+import type { CustomerDTO, PlateLookupResultDTO, VehicleDTO } from "@oficina/types";
 import { api, ApiError } from "../../services/api";
 import { useAsync } from "../../hooks/useAsync";
 
@@ -26,6 +26,44 @@ export function VeiculosPage() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState<string | null>(null);
+
+  async function handleLookupPlate() {
+    const plate = form.plate.trim();
+    if (!plate) {
+      setLookupMessage("Digite a placa antes de buscar.");
+      return;
+    }
+
+    setLookingUp(true);
+    setLookupMessage(null);
+    try {
+      const result = await api.get<PlateLookupResultDTO>(
+        `/vehicles/lookup-plate/${encodeURIComponent(plate)}`,
+      );
+      if (result.notFound || (!result.brand && !result.model)) {
+        setLookupMessage(
+          "Não foi possível consultar a placa automaticamente. Preencha os dados manualmente.",
+        );
+        return;
+      }
+      setForm((prev) => ({
+        ...prev,
+        brand: result.brand ?? prev.brand,
+        model: result.model ?? prev.model,
+        color: result.color ?? prev.color,
+        year: result.year ? String(result.year) : prev.year,
+      }));
+      setLookupMessage("Veículo encontrado — confira os dados preenchidos automaticamente.");
+    } catch (err) {
+      setLookupMessage(
+        "Consulta de placa indisponível no momento. Preencha os dados manualmente.",
+      );
+    } finally {
+      setLookingUp(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,11 +126,26 @@ export function VeiculosPage() {
             ))}
           </select>
         </div>
-        <Input
-          label="Placa"
-          value={form.plate}
-          onChange={(e) => setForm({ ...form, plate: e.target.value })}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Placa</label>
+          <div style={{ display: "flex", gap: 6 }}>
+            <input
+              value={form.plate}
+              onChange={(e) => setForm({ ...form, plate: e.target.value.toUpperCase() })}
+              style={{
+                flex: 1,
+                padding: "8px 10px",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                fontSize: 14,
+                textTransform: "uppercase",
+              }}
+            />
+            <Button type="button" variant="secondary" onClick={handleLookupPlate} disabled={lookingUp}>
+              {lookingUp ? "Buscando..." : "Buscar"}
+            </Button>
+          </div>
+        </div>
         <Input
           label="Marca"
           value={form.brand}
@@ -114,6 +167,9 @@ export function VeiculosPage() {
           value={form.color}
           onChange={(e) => setForm({ ...form, color: e.target.value })}
         />
+        {lookupMessage && (
+          <div style={{ gridColumn: "1 / -1", color: "#4b5563", fontSize: 13 }}>{lookupMessage}</div>
+        )}
         {formError && (
           <div style={{ gridColumn: "1 / -1", color: "#dc2626", fontSize: 13 }}>{formError}</div>
         )}

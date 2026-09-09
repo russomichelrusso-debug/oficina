@@ -32,6 +32,23 @@ export interface VehicleDTO {
   createdAt: string;
 }
 
+export interface PlateLookupResultDTO {
+  plate: string;
+  brand?: string;
+  model?: string;
+  color?: string;
+  year?: number;
+  modelYear?: number;
+  chassis?: string;
+  city?: string;
+  state?: string;
+  returnCode?: string;
+  returnMessage?: string;
+  statusCode?: string;
+  statusMessage?: string;
+  notFound?: boolean;
+}
+
 export interface DashboardSummaryDTO {
   totalCustomers: number;
   totalVehicles: number;
