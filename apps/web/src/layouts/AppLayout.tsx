@@ -3,21 +3,29 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@oficina/ui";
 import { useAuthStore } from "../store/auth.store";
 
-const NAV_ITEMS = [
+// `roles` ausente = visível para qualquer usuário logado (o backend ainda
+// aplica o RBAC de verdade nos endpoints — isto só evita levar o usuário a
+// uma tela que vai só devolver 403).
+const NAV_ITEMS: { to: string; label: string; end?: boolean; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", end: true },
-  { to: "/clientes", label: "Clientes" },
-  { to: "/veiculos", label: "Veículos" },
-  { to: "/ordens-servico", label: "Ordens de Serviço" },
-  { to: "/orcamentos", label: "Orçamentos" },
+  { to: "/clientes", label: "Clientes", roles: ["ADMIN", "GERENTE", "RECEPCAO"] },
+  { to: "/veiculos", label: "Veículos", roles: ["ADMIN", "GERENTE", "RECEPCAO"] },
+  {
+    to: "/ordens-servico",
+    label: "Ordens de Serviço",
+    roles: ["ADMIN", "GERENTE", "RECEPCAO", "FINANCEIRO", "ESTOQUE", "MECANICO"],
+  },
+  { to: "/orcamentos", label: "Orçamentos", roles: ["ADMIN", "GERENTE", "RECEPCAO", "MECANICO"] },
   { to: "/mecanicos", label: "Mecânicos" },
   { to: "/estoque", label: "Estoque" },
-  { to: "/financeiro", label: "Financeiro" },
-  { to: "/relatorios", label: "Relatórios" },
+  { to: "/financeiro", label: "Financeiro", roles: ["ADMIN", "GERENTE", "FINANCEIRO", "RECEPCAO"] },
+  { to: "/relatorios", label: "Relatórios", roles: ["ADMIN", "GERENTE", "FINANCEIRO"] },
 ];
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, hasRole } = useAuthStore();
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.roles || hasRole(...item.roles));
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: "system-ui, sans-serif" }}>
@@ -35,7 +43,7 @@ export function AppLayout() {
           🔧 Oficina
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

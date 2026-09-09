@@ -21,11 +21,25 @@ export class ServiceOrdersService {
     return this.database.db;
   }
 
-  async findAll(filters: { status?: ServiceOrderStatus; mechanicId?: string; customerId?: string }) {
+  async findAll(
+    filters: { status?: ServiceOrderStatus; mechanicId?: string; customerId?: string },
+    user?: AuthenticatedUser,
+  ) {
     const conditions = [] as any[];
     if (filters.status) conditions.push(eq(schema.serviceOrders.status, filters.status));
-    if (filters.mechanicId) conditions.push(eq(schema.serviceOrders.mechanicId, filters.mechanicId));
     if (filters.customerId) conditions.push(eq(schema.serviceOrders.customerId, filters.customerId));
+
+    // Mecânico só lista as próprias OS (spec §3) — ignora qualquer
+    // mechanicId vindo da query e força o filtro pelo seu próprio registro.
+    const privileged = [RoleName.ADMIN, RoleName.GERENTE, RoleName.RECEPCAO, RoleName.FINANCEIRO, RoleName.ESTOQUE];
+    if (user && !user.roles.some((r) => privileged.includes(r)) && user.roles.includes(RoleName.MECANICO)) {
+      const mechanic = await this.db.query.mechanics.findFirst({
+        where: eq(schema.mechanics.userId, user.id),
+      });
+      conditions.push(eq(schema.serviceOrders.mechanicId, mechanic?.id ?? "00000000-0000-0000-0000-000000000000"));
+    } else if (filters.mechanicId) {
+      conditions.push(eq(schema.serviceOrders.mechanicId, filters.mechanicId));
+    }
 
     return this.db.query.serviceOrders.findMany({
       where: conditions.length ? and(...conditions) : undefined,

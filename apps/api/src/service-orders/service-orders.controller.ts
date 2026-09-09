@@ -14,13 +14,21 @@ export class ServiceOrdersController {
   constructor(private readonly serviceOrdersService: ServiceOrdersService) {}
 
   @Get()
-  @Roles(RoleName.ADMIN, RoleName.GERENTE, RoleName.RECEPCAO, RoleName.FINANCEIRO, RoleName.ESTOQUE)
+  @Roles(
+    RoleName.ADMIN,
+    RoleName.GERENTE,
+    RoleName.RECEPCAO,
+    RoleName.FINANCEIRO,
+    RoleName.ESTOQUE,
+    RoleName.MECANICO,
+  )
   findAll(
+    @CurrentUser() user: AuthenticatedUser,
     @Query("status") status?: ServiceOrderStatus,
     @Query("mechanicId") mechanicId?: string,
     @Query("customerId") customerId?: string,
   ) {
-    return this.serviceOrdersService.findAll({ status, mechanicId, customerId });
+    return this.serviceOrdersService.findAll({ status, mechanicId, customerId }, user);
   }
 
   @Get(":id")
