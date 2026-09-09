@@ -29,15 +29,64 @@ export function App() {
           }
         >
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/clientes" element={<ClientesPage />} />
-          <Route path="/veiculos" element={<VeiculosPage />} />
-          <Route path="/ordens-servico" element={<OrdensServicoPage />} />
-          <Route path="/ordens-servico/:id" element={<OrdemServicoDetailPage />} />
-          <Route path="/orcamentos" element={<OrcamentosPage />} />
+          <Route
+            path="/clientes"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "RECEPCAO"]}>
+                <ClientesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/veiculos"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "RECEPCAO"]}>
+                <VeiculosPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ordens-servico"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "RECEPCAO", "FINANCEIRO", "ESTOQUE", "MECANICO"]}>
+                <OrdensServicoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ordens-servico/:id"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "RECEPCAO", "FINANCEIRO", "ESTOQUE", "MECANICO"]}>
+                <OrdemServicoDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orcamentos"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "RECEPCAO", "MECANICO"]}>
+                <OrcamentosPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/mecanicos" element={<MecanicosPage />} />
           <Route path="/estoque" element={<EstoquePage />} />
-          <Route path="/financeiro" element={<FinanceiroPage />} />
-          <Route path="/relatorios" element={<RelatoriosPage />} />
+          <Route
+            path="/financeiro"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "FINANCEIRO", "RECEPCAO"]}>
+                <FinanceiroPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/relatorios"
+            element={
+              <ProtectedRoute roles={["ADMIN", "GERENTE", "FINANCEIRO"]}>
+                <RelatoriosPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>
